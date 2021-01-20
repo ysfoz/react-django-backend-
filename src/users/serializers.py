@@ -1,5 +1,3 @@
-from django.core.validators import MinLengthValidator
-from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
