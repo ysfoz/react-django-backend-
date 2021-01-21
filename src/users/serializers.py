@@ -1,9 +1,8 @@
-from django.core.validators import MinLengthValidator
-from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from .models import Profile
 
 
 
@@ -42,6 +41,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         
         return user
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = (
+            'first_name',
+            'last_name',
+            'country',
+            'address',
+            'phone',
+            'bio',
+        )
+        read_only_fields = ['id','user']
         
     
 
