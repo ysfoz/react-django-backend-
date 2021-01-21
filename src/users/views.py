@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
+from django.contrib.auth.models import User
 
 
 from .models import Profile
@@ -24,19 +25,32 @@ def registerView(request):
     
 @api_view(['GET','PUT'])
 def profile_view(request):
-    profile = Profile.objects.all()
-    profile =profile.filter(user_id = request.user.id)
-    
+    profile = get_object_or_404(Profile,user = request.user )
     if request.method == 'GET':
-        serializer = ProfileSerializer(profile)
-        return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = ProfileSerializer(profile, data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            data = {
-                'message':'This Profile updated succesfully'
-            }
-            return Response(data,status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+         serializer = ProfileSerializer(profile)
+         return Response(serializer.data)
+     
+     
+    # elif request.method == 'POST':
+    #     serializer = ProfileSerializer(profile,data= request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         data = {
+    #                 'message':'This Profile updated succesfully'
+    #                }
+    #         return Response(data,status=status.HTTP_204_NO_CONTENT)
+    #     return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+         
+    
+ 
+    
+    
+    
+    
+    
+    
+    
+    
+ 
+    
     
