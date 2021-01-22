@@ -9,21 +9,28 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 
 # Create your views here.
 
-@api_view(['GET','POST'])
+
+
+@api_view(['GET'])
 @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated,AllowAny])
-def post_list_create(request):
+@permission_classes([AllowAny])
+def post_list(request):
     if request.method == 'GET':
-        permission_classes([AllowAny])
         post = Post.objects.all()
+        post = post.filter(status = 'p')
         serializer = PostSerializer(post,many = True)
         return Response(serializer.data)
-    elif request.method == 'POST':
-        permission_classes([IsAuthenticated])
+ 
+ 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])   
+def post_create(request):  
+    if request.method == 'POST':
         serializer = PostSerializer(data=request.data)
+        request.data['author'] = request.user.id
         if serializer.is_valid():
-            
-            serializer.save(author = request.user)
+            serializer.save()
             data = {
                 'message':'New Post created succesfully'
             }
@@ -32,24 +39,39 @@ def post_list_create(request):
     
     
     
-@api_view(['GET','DELETE','PUT'])
-def post_get_update_delete(request,id):
-    post = get_object_or_404(Post,id = id)
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([AllowAny]) 
+def post_get(request,slug):
+    post = get_object_or_404(Post,slug = slug)
     if request.method == 'GET':
         serializer = PostSerializer(post)
         return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = PostSerializer(post,data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            data = {
-                'message':'This Post updated succesfully'
-            }
-            return Response(data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+@api_view(['DELETE','PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def post_update_delete(request,slug):
+    post = get_object_or_404(Post,slug = slug) 
+    if post.author.id == request.user.id:
+        if request.method == 'PUT':
+            request.data['author'] = request.user.id
+            serializer = PostSerializer(post,data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+                data = {
+                    'message':'This Post updated succesfully'
+                }
+                return Response(data)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            post.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    data = {
+        "message":"You are not authorized"
+    }
+    return Response(data,status=status.HTTP_400_BAD_REQUEST)
         
         
 
