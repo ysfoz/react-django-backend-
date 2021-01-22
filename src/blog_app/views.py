@@ -1,15 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view,authentication_classes,permission_classes
 from rest_framework.response import Response 
-from .models import Post, Like
-from .serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer
+from .models import Post, Like, View
+from .serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer, PostViewSerializer
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated,AllowAny
 
 # Create your views here.
-
-
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -21,7 +19,8 @@ def post_list(request):
         serializer = PostSerializer(post,many = True)
         return Response(serializer.data)
  
- 
+
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])   
@@ -44,9 +43,21 @@ def post_create(request):
 @permission_classes([AllowAny]) 
 def post_get(request,slug):
     post = get_object_or_404(Post,slug = slug)
-    if request.method == 'GET':
+    view_qs = View.objects.filter(user=request.user, post=post)
+    if view_qs:
+        pass
+    else:
+        serializer = PostViewSerializer(data = request.data)
+        request.data['user'] =request.user.id
+        request.data['post'] = post.id
+        if serializer.is_valid():
+            serializer.save(user = request.user, post = post)
+    if request.method == 'GET':  
         serializer = PostDetailSerializer(post)
         return Response(serializer.data)
+    
+    
+    
     
     
 @api_view(['DELETE','PUT'])
@@ -73,12 +84,13 @@ def post_update_delete(request,slug):
     }
     return Response(data,status=status.HTTP_400_BAD_REQUEST)
         
+        
+    
+    
+        
 @api_view(['POST'])
 def comment_view(request, slug):
     post = get_object_or_404(Post, slug=slug)
-    # post = post.filter(slug=slug)
-    print(post)
-   
     serializer = CommentSerializer(data=request.data)
     if request.method == 'POST': 
         if serializer.is_valid():
@@ -86,6 +98,8 @@ def comment_view(request, slug):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     return  Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
         
+
+
 
 @api_view(["POST"])
 def like_view(request, slug):
@@ -107,15 +121,3 @@ def like_view(request, slug):
         
 
 
-
-# @login_required()
-# def like(request, slug):
-#     if request.method == "POST":
-#         obj = get_object_or_404(Post, slug=slug)
-#         like_qs = Like.objects.filter(user=request.user, post=obj)
-#         if like_qs:
-#             like_qs.delete()
-#         else:
-#             Like.objects.create(user=request.user, post=obj)
-#         return redirect('blog:detail', slug=slug)
-#     return redirect('blog:detail', slug=slug)
