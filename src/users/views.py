@@ -29,7 +29,7 @@ def profile_view(request):
     if request.method == 'GET':
          serializer = ProfileSerializer(profile)
          return Response(serializer.data)
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         serializer = ProfileSerializer(profile,data= request.data)
         if serializer.is_valid():
             serializer.save()
