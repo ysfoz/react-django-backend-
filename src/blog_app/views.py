@@ -1,22 +1,29 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,authentication_classes,permission_classes
 from rest_framework.response import Response 
 from .models import Post
 from .serializers import PostSerializer
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
 # Create your views here.
 
 @api_view(['GET','POST'])
+@authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated,AllowAny])
 def post_list_create(request):
     if request.method == 'GET':
+        permission_classes([AllowAny])
         post = Post.objects.all()
         serializer = PostSerializer(post,many = True)
         return Response(serializer.data)
     elif request.method == 'POST':
+        permission_classes([IsAuthenticated])
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            
+            serializer.save(author = request.user)
             data = {
                 'message':'New Post created succesfully'
             }
