@@ -29,10 +29,10 @@ def post_create(request):
         serializer = PostSerializer(data=request.data)
         request.data['author'] = request.user.id
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author = request.user)
             data = {
                 'message':'New Post created succesfully'
-            }
+                }
             return Response(data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -43,7 +43,7 @@ def post_create(request):
 @permission_classes([AllowAny]) 
 def post_get(request,slug):
     post = get_object_or_404(Post,slug = slug)
-    view_qs = View.objects.filter(user=request.user, post=post)
+    view_qs = View.objects.filter(user=request.user.id, post=post)
     if view_qs:
         pass
     else:
@@ -51,7 +51,7 @@ def post_get(request,slug):
         request.data['user'] =request.user.id
         request.data['post'] = post.id
         if serializer.is_valid():
-            serializer.save(user = request.user, post = post)
+            serializer.save(user = request.user.id, post = post)
     if request.method == 'GET':  
         serializer = PostDetailSerializer(post)
         return Response(serializer.data)
@@ -70,7 +70,7 @@ def post_update_delete(request,slug):
             request.data['author'] = request.user.id
             serializer = PostSerializer(post,data = request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(author = request.user)
                 data = {
                     'message':'This Post updated succesfully'
                 }
@@ -78,7 +78,10 @@ def post_update_delete(request,slug):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'DELETE':
             post.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            data = {
+                'message':'You removed an item succesfully'
+            }
+            return Response(data,status=status.HTTP_204_NO_CONTENT)
     data = {
         "message":"You are not authorized"
     }
@@ -95,6 +98,7 @@ def comment_view(request, slug):
     if request.method == 'POST': 
         if serializer.is_valid():
             serializer.save(user=request.user, post= post)
+           
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     return  Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
         

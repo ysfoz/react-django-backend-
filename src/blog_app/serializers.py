@@ -26,7 +26,6 @@ class PostSerializer(serializers.ModelSerializer):
             'comment_count',
             'view_count',
             'like_count',
-            'slug'
         )
         
          
@@ -45,7 +44,6 @@ class PostDetailSerializer(serializers.ModelSerializer):
             'comment_count',
             'view_count',
             'like_count',
-            'slug',
             'comments'
         )
         

@@ -18,6 +18,9 @@ class Post(models.Model):
     author = models.ForeignKey(User,on_delete=models.CASCADE)
     slug = models.SlugField(blank=True,unique=True)
     
+    class Meta:
+        ordering = ['-publish_date']
+    
     def __str__(self):
         return self.title
     
@@ -43,6 +46,11 @@ class Comment(models.Model):
     
     def __str__(self):
         return self.user.username
+    class Meta:
+        ordering = ['-time']
+    
+    
+    
 class Like(models.Model):
      user = models.ForeignKey(User,on_delete=models.CASCADE)
      post = models.ForeignKey(Post,on_delete=models.CASCADE)
