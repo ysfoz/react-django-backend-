@@ -29,10 +29,10 @@ def post_create(request):
         serializer = PostSerializer(data=request.data)
         request.data['author'] = request.user.id
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author = request.user)
             data = {
                 'message':'New Post created succesfully'
-            }
+                }
             return Response(data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -43,10 +43,8 @@ def post_create(request):
 @permission_classes([AllowAny]) 
 def post_get(request,slug):
     post = get_object_or_404(Post,slug = slug)
-    view_qs = View.objects.filter(user=request.user, post=post)
-    if view_qs:
-        pass
-    else:
+    view_qs = View.objects.filter(user=request.user.id, post=post)
+    if not view_qs:
         serializer = PostViewSerializer(data = request.data)
         request.data['user'] =request.user.id
         request.data['post'] = post.id
@@ -70,15 +68,18 @@ def post_update_delete(request,slug):
             request.data['author'] = request.user.id
             serializer = PostSerializer(post,data = request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(author = request.user)
                 data = {
-                    'message':'This Post updated succesfully'
+                    'message':'This Post updated successfully!'
                 }
                 return Response(data)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'DELETE':
             post.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            data = {
+                'message':'You removed an item successfully!'
+            }
+            return Response(data,status=status.HTTP_204_NO_CONTENT)
     data = {
         "message":"You are not authorized"
     }
@@ -89,19 +90,25 @@ def post_update_delete(request,slug):
     
         
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def comment_view(request, slug):
     post = get_object_or_404(Post, slug=slug)
     serializer = CommentSerializer(data=request.data)
     if request.method == 'POST': 
         if serializer.is_valid():
             serializer.save(user=request.user, post= post)
+           
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     return  Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
+        
         
 
 
 
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def like_view(request, slug):
     post = get_object_or_404(Post, slug=slug)
     

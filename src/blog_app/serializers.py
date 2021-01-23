@@ -10,6 +10,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ( "content",  "user", "time") 
+        read_only_fields = ["post","time", "user"]
          
 class PostSerializer(serializers.ModelSerializer):
     
@@ -26,8 +27,11 @@ class PostSerializer(serializers.ModelSerializer):
             'comment_count',
             'view_count',
             'like_count',
-            'slug'
+            'status',
+            'slug',
         )
+        
+        read_only_fields = ["id","publish_date", "author", 'comment_count', 'view_count', 'like_count', 'slug']
         
          
 class PostDetailSerializer(serializers.ModelSerializer):
@@ -42,19 +46,21 @@ class PostDetailSerializer(serializers.ModelSerializer):
             'update_date',
             'content',
             'author',
+            'status',
             'comment_count',
             'view_count',
             'like_count',
-            'slug',
-            'comments'
+            'comments',
+            'slug'
         )
+        read_only_fields = ["id","publish_date", "author", 'comment_count', 'view_count', 'like_count', 'slug','comments']
         
-class CommentCreateSerializer(serializers.ModelSerializer):
-    content = serializers.CharField()
-    # author = serializers.CharField( source="author.username", read_only=True)
-    class Meta:
-        model = Comment
-        fields = ( "content",)
+# class CommentCreateSerializer(serializers.ModelSerializer):
+#     content = serializers.CharField()
+#     # author = serializers.CharField( source="author.username", read_only=True)
+#     class Meta:
+#         model = Comment
+#         fields = ( "content",)
         
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
