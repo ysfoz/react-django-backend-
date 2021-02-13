@@ -54,7 +54,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'bio',
             'status'
         )
-        read_only_fields = ['id','user']
+        # read_only_fields = ['id','user']
         
     
 
